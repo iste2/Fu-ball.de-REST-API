@@ -25,9 +25,9 @@ app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =
     return Results.Ok(teams);
 });
 
-app.MapGet("/nextgames/team/{id}", async (string id) =>
+app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
 {
-    var parser = new NextGamesOfTeamScraper(id);
+    var parser = new GamesOfTeamScraper(id, start, end);
     var games = await parser.Scrape();
     return Results.Ok(games);
 });
