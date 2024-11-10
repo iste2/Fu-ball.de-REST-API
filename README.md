@@ -34,7 +34,7 @@ Run
 #### Get all teams of a club
 
 ```http
-  GET /teams/club/{id}/season/{season}
+GET /teams/club/{id}/season/{season}
 ```
 
 | Parameter | Type     | Description                |
@@ -45,7 +45,7 @@ Run
 #### Get games of a team
 
 ```http
-  GET /games/team/{id}/start/{start}/end/{end}
+GET /games/team/{id}/start/{start}/end/{end}
 ```
 
 | Parameter | Type     | Description                       |
@@ -87,7 +87,7 @@ You get a response in form of a json list:
     "link": "https://www.fussball.de/mannschaft/eintracht-kornelimuenster-ii-eintracht-kornelimuenster-mittelrhein/-/saison/2425/team-id/011MIC82IO000000VTVG0001VTR8C1K7"
   },
   {
-    ...
+    "...": "..."
   }
 ]
 ```
@@ -158,11 +158,10 @@ You get a response in form of a json list:
     "goalsAwayHalf": "0"
   },
   {
-    ...
+    "...": "..."
   }
 ]
 ```
-
 
 ## Roadmap
 
