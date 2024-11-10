@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build ./Fußball.de.Rest.Api --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file ./Fußball.de.Rest.Api/Dockerfile --tag my-image-name:$(date +%s)
