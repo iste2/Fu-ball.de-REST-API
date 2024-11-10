@@ -4,10 +4,8 @@
 This tool scrapes the Fußball.de page for some club and game data that can be accessed via a REST API.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-
-![dotnet build and test](https://github.com/github/docs/actions/workflows/dotnet.yml/badge.svg?branch=master)
-
-![docker build](https://github.com/github/docs/actions/workflows/docker-image.yml/badge.svg?branch=master)
+[![.NET build and test](https://github.com/iste2/Fu-ball.de-REST-API/actions/workflows/dotnet.yml/badge.svg)](https://github.com/iste2/Fu-ball.de-REST-API/actions/workflows/dotnet.yml)
+[![Docker Image CI](https://github.com/iste2/Fu-ball.de-REST-API/actions/workflows/docker-image.yml/badge.svg)](https://github.com/iste2/Fu-ball.de-REST-API/actions/workflows/docker-image.yml)
 
 ## Run Locally
 
