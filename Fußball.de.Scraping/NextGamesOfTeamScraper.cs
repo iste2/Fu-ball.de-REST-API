@@ -19,7 +19,7 @@ public class NextGamesOfTeamScraper(string teamId)
         var doc = new HtmlDocument();
         doc.LoadHtml(response);
         
-        var rows = doc.DocumentNode.SelectNodes("//tr[contains(@class, 'odd')]");
+        var rows = doc.DocumentNode.SelectNodes("//tr");
         
         DateTime? currentKickOff = null;
         var currentLeague = "";
