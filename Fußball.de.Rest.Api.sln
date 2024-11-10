@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fußball.de.Rest.Api", "Fußball.de.Rest.Api\Fußball.de.Rest.Api.csproj", "{EFDC7855-B10F-4139-BAAE-4E58A9EF5900}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fußball.de.Scraping", "Fußball.de.Scraping\Fußball.de.Scraping.csproj", "{946A7870-E1D7-455F-9964-76ED6556768E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFDC7855-B10F-4139-BAAE-4E58A9EF5900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFDC7855-B10F-4139-BAAE-4E58A9EF5900}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFDC7855-B10F-4139-BAAE-4E58A9EF5900}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFDC7855-B10F-4139-BAAE-4E58A9EF5900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{946A7870-E1D7-455F-9964-76ED6556768E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{946A7870-E1D7-455F-9964-76ED6556768E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{946A7870-E1D7-455F-9964-76ED6556768E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{946A7870-E1D7-455F-9964-76ED6556768E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
