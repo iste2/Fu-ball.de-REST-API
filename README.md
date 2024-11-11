@@ -246,6 +246,20 @@ You get a response in form of a json list:
 ]
 ```
 
+### Get the game duration of a team kind
+
+When you want to get the game duration of an A-Junioren team, you can use the following API-call:
+
+```http
+GET /gamesduration/teamkind/A-Junioren
+```
+
+You get a response in form of a simple integer. That is the game time in minutes:
+
+```json
+90
+```
+
 ## Roadmap
 
 - Host this project to make the API generally available
