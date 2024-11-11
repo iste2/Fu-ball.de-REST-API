@@ -22,19 +22,19 @@ app.UseHttpsRedirection();
 app.UseOutputCache();
 
 app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =>
-{
-    var parser = new TeamsOfAClubScraper(id, season);
-    var teams = await parser.Scrape();
-    return Results.Ok(teams);
-})
-.CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
+    {
+        var parser = new TeamsOfAClubScraper(id, season);
+        var teams = await parser.Scrape();
+        return Results.Ok(teams);
+    })
+    .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
 app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
-{
-    var parser = new GamesOfTeamScraper(id, start, end);
-    var games = await parser.Scrape();
-    return Results.Ok(games);
-})
-.CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
+    {
+        var parser = new GamesOfTeamScraper(id, start, end);
+        var games = await parser.Scrape();
+        return Results.Ok(games);
+    })
+    .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
 app.Run();
