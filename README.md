@@ -56,6 +56,29 @@ GET /games/team/{id}/start/{start}/end/{end}
 
 A maximum of 100 games can be loaded in one call.
 
+#### Get games of a club
+
+```http
+GET /games/club/{id}/start/{start}/end/{end}
+```
+
+| Parameter | Type     | Description                                      |
+| :-------- | :------- |:-------------------------------------------------|
+| `id`      | `string` | **Required**. Id of the club                     |
+| `start`      | `string` | **Required**. Earliest date (Format: dd.MM.yyyy) |
+| `end`      | `string` | **Required**. Latest date (Format: dd.MM.yyyy)   |
+
+#### Get games duration of a team kind
+
+```http
+GET /gamesduration/teamkind/{teamkind}
+```
+
+| Parameter  | Type     | Description                                                                                                                                                                                 |
+|:-----------| :------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `teamkind` | `string` | **Required**. Teamkind. The following are available: Herren, A-Junioren, B-Junioren, C-Junioren, D-Junioren, E-Junioren, F-Junioren, Frauen, A-Juniorinnen, B-Juniorinnen, C-Juniorinnen, D-Juniorinnen |
+
+
 
 ## Usage/Examples
 
@@ -64,7 +87,7 @@ A maximum of 100 games can be loaded in one call.
 First you have find out the id of your club. This can be done by visiting the club's page on Fußball.de.
 In this example you find this page at https://www.fussball.de/verein/eintracht-kornelimuenster-mittelrhein/-/id/00ES8GN92C0000B1VV0AG08LVUPGND5I#!/. You can pull the id out of the link: "00ES8GN92C0000B1VV0AG08LVUPGND5I".
 
-You are interesed in season 2024-2025.
+You are interested in season 2024-2025.
 
 So your API-call looks like:
 
@@ -97,7 +120,7 @@ You get a response in form of a json list:
 First you have find out the id of your team. This can be done by visiting the team's page on Fußball.de.
 In this example you find this page at https://www.fussball.de/mannschaft/eintracht-kornelimuenster-eintracht-kornelimuenster-mittelrhein/-/saison/2425/team-id/011MIF5Q28000000VTVG0001VTR8C1K7#!/. You can pull the id out of the link: "011MIF5Q28000000VTVG0001VTR8C1K7".
 
-You are interesed in the timespan 01.01.2024 - 30.06.2024.
+You are interested in the timespan 01.01.2024 - 30.06.2024.
 
 So your API-call looks like:
 
@@ -168,7 +191,7 @@ You get a response in form of a json list:
 First you have find out the id of your club. This can be done by visiting the club's page on Fußball.de.
 In this example you find this page at https://www.fussball.de/verein/eintracht-kornelimuenster-mittelrhein/-/id/00ES8GN92C0000B1VV0AG08LVUPGND5I#!/. You can pull the id out of the link: "00ES8GN92C0000B1VV0AG08LVUPGND5I".
 
-You are interesed in the timespan 09.11.2024 - 09.11.2024, so specifically the games of this day.
+You are interested in the timespan 09.11.2024 - 09.11.2024, so specifically the games of this day.
 
 So your API-call looks like:
 
