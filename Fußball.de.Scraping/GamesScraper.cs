@@ -112,7 +112,7 @@ public class GamesScraper(string url)
         return games;
     }
 
-    private async Task<string> GetHomeSideKind(string link)
+    private static async Task<string> GetHomeSideKind(string link)
     {
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
