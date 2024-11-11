@@ -8,6 +8,7 @@ public class TeamsOfAClubScraper(string clubId, string season)
     private string Season { get; } = season;
 
     private string Url => $"https://www.fussball.de/ajax.club.teams/-/id/{ClubId}/saison/{Season}";
+    private string LogoUrl => $"https://www.fussball.de/export.media/-/action/getLogo/format/12/id/{ClubId}";
 
     public async Task<List<Team>> Scrape()
     {
@@ -31,7 +32,7 @@ public class TeamsOfAClubScraper(string clubId, string season)
             // Neues Team-Objekt erstellen und zur Liste hinzufügen
             if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(link))
             {
-                teams.Add(new Team(id, name, link));
+                teams.Add(new Team(id, ClubId, name, link, LogoUrl));
             }
         }
 

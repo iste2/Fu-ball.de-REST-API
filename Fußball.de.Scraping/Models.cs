@@ -1,6 +1,11 @@
 namespace Fußball.de.Scraping;
 
-public record Team(string Id, string Name, string Link);
+public record Team(
+    string Id,
+    string ClubId,
+    string Name,
+    string Link,
+    string LogoUrl);
 public record Game(
     string Id, 
     DateTime KickOff, 
