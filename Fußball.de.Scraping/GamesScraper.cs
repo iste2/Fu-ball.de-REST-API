@@ -36,16 +36,25 @@ public class GamesScraper(string url)
 
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
                 
+                var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
+                
                 var homeSide = new Team(
                     ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")),
+                    homeClubId,
                     homeTeamNode.SelectSingleNode(".//div[@class='club-name']").InnerText.Trim(),
-                    homeTeamNode.GetAttributeValue("href", "")
+                    homeTeamNode.GetAttributeValue("href", ""),
+                    $"https://www.fussball.de/export.media/-/action/getLogo/format/12/id/{homeClubId}"
+                    
                 );
 
+                var awayClubId = await GetClubIdFromLink(awayTeamNode.GetAttributeValue("href", ""));
+                
                 var awaySide = new Team(
                     ExtractTeamId(awayTeamNode.GetAttributeValue("href", "")),
+                    awayClubId,
                     awayTeamNode.SelectSingleNode(".//div[@class='club-name']").InnerText.Trim(),
-                    awayTeamNode.GetAttributeValue("href", "")
+                    awayTeamNode.GetAttributeValue("href", ""),
+                    $"https://www.fussball.de/export.media/-/action/getLogo/format/12/id/{awayClubId}"
                 );
 
                 var responseFromGameLink = await client.GetStringAsync(gameLinkNode.GetAttributeValue("href", ""));
@@ -126,5 +135,19 @@ public class GamesScraper(string url)
         {
             return null;
         }
+    }
+    
+    private static async Task<string> GetClubIdFromLink(string link)
+    {
+        var client = new HttpClient();
+        var response = await client.GetStringAsync(link);
+        
+        var doc = new HtmlDocument();
+        doc.LoadHtml(response);
+        
+        var clubLink = doc.DocumentNode.SelectNodes("//p[@class='subline']//a")[1].GetAttributeValue("href", "");
+        var clubId = clubLink?.Split(["id/"], StringSplitOptions.None)[1] ?? "";
+        return clubId;
+        
     }
 }
