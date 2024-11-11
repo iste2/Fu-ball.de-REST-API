@@ -5,7 +5,8 @@ public record Team(
     string ClubId,
     string Name,
     string Link,
-    string LogoUrl);
+    string LogoUrl,
+    string Kind);
 public record Game(
     string Id, 
     DateTime KickOff, 
