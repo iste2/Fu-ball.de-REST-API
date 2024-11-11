@@ -63,4 +63,25 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
+app.MapGet("/gamesduration/teamkind/{teamkind}", (string teamkind) =>
+    {
+        var duration = teamkind switch
+        {
+            TeamKinds.Herren => TeamKindGameDurations.Herren,
+            TeamKinds.Frauen => TeamKindGameDurations.Frauen,
+            TeamKinds.AJunioren => TeamKindGameDurations.AJunioren,
+            TeamKinds.BJunioren => TeamKindGameDurations.BJunioren,
+            TeamKinds.CJunioren => TeamKindGameDurations.CJunioren,
+            TeamKinds.DJunioren => TeamKindGameDurations.DJunioren,
+            TeamKinds.EJunioren => TeamKindGameDurations.EJunioren,
+            TeamKinds.FJunioren => TeamKindGameDurations.FJunioren,
+            TeamKinds.AJuniorinnen => TeamKindGameDurations.AJuniorinnen,
+            TeamKinds.BJuniorinnen => TeamKindGameDurations.BJuniorinnen,
+            TeamKinds.CJuniorinnen => TeamKindGameDurations.CJuniorinnen,
+            TeamKinds.DJuniorinnen => TeamKindGameDurations.DJuniorinnen,
+            _ => 0
+        };
+        return Results.Ok(duration);
+    });
+
 app.Run();

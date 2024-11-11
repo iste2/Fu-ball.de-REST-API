@@ -56,6 +56,29 @@ GET /games/team/{id}/start/{start}/end/{end}
 
 A maximum of 100 games can be loaded in one call.
 
+#### Get games of a club
+
+```http
+GET /games/club/{id}/start/{start}/end/{end}
+```
+
+| Parameter | Type     | Description                                      |
+| :-------- | :------- |:-------------------------------------------------|
+| `id`      | `string` | **Required**. Id of the club                     |
+| `start`      | `string` | **Required**. Earliest date (Format: dd.MM.yyyy) |
+| `end`      | `string` | **Required**. Latest date (Format: dd.MM.yyyy)   |
+
+#### Get games duration of a team kind
+
+```http
+GET /gamesduration/teamkind/{teamkind}
+```
+
+| Parameter  | Type     | Description                                                                                                                                                                                 |
+|:-----------| :------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `teamkind` | `string` | **Required**. Teamkind. The following are available: Herren, A-Junioren, B-Junioren, C-Junioren, D-Junioren, E-Junioren, F-Junioren, Frauen, A-Juniorinnen, B-Juniorinnen, C-Juniorinnen, D-Juniorinnen |
+
+
 
 ## Usage/Examples
 
@@ -64,7 +87,7 @@ A maximum of 100 games can be loaded in one call.
 First you have find out the id of your club. This can be done by visiting the club's page on Fußball.de.
 In this example you find this page at https://www.fussball.de/verein/eintracht-kornelimuenster-mittelrhein/-/id/00ES8GN92C0000B1VV0AG08LVUPGND5I#!/. You can pull the id out of the link: "00ES8GN92C0000B1VV0AG08LVUPGND5I".
 
-You are interesed in season 2024-2025.
+You are interested in season 2024-2025.
 
 So your API-call looks like:
 
@@ -97,7 +120,7 @@ You get a response in form of a json list:
 First you have find out the id of your team. This can be done by visiting the team's page on Fußball.de.
 In this example you find this page at https://www.fussball.de/mannschaft/eintracht-kornelimuenster-eintracht-kornelimuenster-mittelrhein/-/saison/2425/team-id/011MIF5Q28000000VTVG0001VTR8C1K7#!/. You can pull the id out of the link: "011MIF5Q28000000VTVG0001VTR8C1K7".
 
-You are interesed in the timespan 01.01.2024 - 30.06.2024.
+You are interested in the timespan 01.01.2024 - 30.06.2024.
 
 So your API-call looks like:
 
@@ -161,6 +184,103 @@ You get a response in form of a json list:
     "...": "..."
   }
 ]
+```
+
+### Get the games of a club
+
+First you have find out the id of your club. This can be done by visiting the club's page on Fußball.de.
+In this example you find this page at https://www.fussball.de/verein/eintracht-kornelimuenster-mittelrhein/-/id/00ES8GN92C0000B1VV0AG08LVUPGND5I#!/. You can pull the id out of the link: "00ES8GN92C0000B1VV0AG08LVUPGND5I".
+
+You are interested in the timespan 09.11.2024 - 09.11.2024, so specifically the games of this day.
+
+So your API-call looks like:
+
+```http
+GET /games/club/00ES8GN92C0000B1VV0AG08LVUPGND5I/start/09.11.2024/end/09.11.2024
+```
+
+You get a response in form of a json list:
+
+```json
+[
+  {
+    "id": "02R12VKB28000000VS5489B4VTKFKS2T",
+    "kickOff": "2024-11-09T18:15:00",
+    "link": "https://www.fussball.de/spiel/eintracht-kornelimuenster-a1-djk-fv-haaren/-/spiel/02R12VKB28000000VS5489B4VTKFKS2T",
+    "homeSide": {
+      "id": "02PDPBI76S000000VS5489B1VVBNKSSO",
+      "clubId": "00ES8GN92C0000B1VV0AG08LVUPGND5I",
+      "name": "Eintracht Kornelimünster",
+      "link": "https://www.fussball.de/mannschaft/eintracht-kornelimuenster-a1-eintracht-kornelimuenster-mittelrhein/-/saison/2425/team-id/02PDPBI76S000000VS5489B1VVBNKSSO",
+      "logoUrl": "https://www.fussball.de/export.media/-/action/getLogo/format/12/id/00ES8GN92C0000B1VV0AG08LVUPGND5I",
+      "kind": "A-Junioren"
+    },
+    "awaySide": {
+      "id": "02PP6C5LNK000000VS5489B1VU7RM1AE",
+      "clubId": "00ES8GN92C0000A9VV0AG08LVUPGND5I",
+      "name": "DJK FV Haaren",
+      "link": "https://www.fussball.de/mannschaft/djk-fv-haaren-djk-fv-haaren-mittelrhein/-/saison/2425/team-id/02PP6C5LNK000000VS5489B1VU7RM1AE",
+      "logoUrl": "https://www.fussball.de/export.media/-/action/getLogo/format/12/id/00ES8GN92C0000A9VV0AG08LVUPGND5I",
+      "kind": "A-Junioren"
+    },
+    "league": "Kreisleistungsklasse",
+    "squad": "A-Jun., Leistungsstaffel",
+    "squadId": "237011",
+    "address": "Kunstrasenplatz, Sportplatz Inda-Gymnasium, Romerich, 52076 Aachen",
+    "dfbnetId": "237011007",
+    "goalsHome": "8",
+    "goalsAway": "0",
+    "goalsHomeHalf": "3",
+    "goalsAwayHalf": "0"
+  },
+  {
+    "id": "02Q797T174000000VS5489B4VTFDT7S8",
+    "kickOff": "2024-11-09T17:15:00",
+    "link": "https://www.fussball.de/spiel/sg-merkstein-ritzerfeld-eintracht-kornelimuenster-b1/-/spiel/02Q797T174000000VS5489B4VTFDT7S8",
+    "homeSide": {
+      "id": "02IKN0RK04000000VS5489B1VSO9MMK0",
+      "clubId": "00ES8GN9A000000UVV0AG08LVUPGND5I",
+      "name": "SG Merkstein/&#8203;Ritzerfeld",
+      "link": "https://www.fussball.de/mannschaft/sg-merkstein-ritzerfeld-sv-conc-1927-ev-merkstein-mittelrhein/-/saison/2425/team-id/02IKN0RK04000000VS5489B1VSO9MMK0",
+      "logoUrl": "https://www.fussball.de/export.media/-/action/getLogo/format/12/id/00ES8GN9A000000UVV0AG08LVUPGND5I",
+      "kind": "B-Junioren"
+    },
+    "awaySide": {
+      "id": "02B84V91SO000000VS5489B1VV9M5FHC",
+      "clubId": "00ES8GN92C0000B1VV0AG08LVUPGND5I",
+      "name": "Eintracht Kornelimünster",
+      "link": "https://www.fussball.de/mannschaft/eintracht-kornelimuenster-b1-eintracht-kornelimuenster-mittelrhein/-/saison/2425/team-id/02B84V91SO000000VS5489B1VV9M5FHC",
+      "logoUrl": "https://www.fussball.de/export.media/-/action/getLogo/format/12/id/00ES8GN92C0000B1VV0AG08LVUPGND5I",
+      "kind": "B-Junioren"
+    },
+    "league": "Kreissonderliga",
+    "squad": "Sonderliga B-Junioren",
+    "squadId": "237002",
+    "address": "Kunstrasenplatz, Sportplatz Marie-Juchacz-Strasse, Marie-Juchacz-Str., 52134 Herzogenrath",
+    "dfbnetId": "237002048",
+    "goalsHome": "3",
+    "goalsAway": "6",
+    "goalsHomeHalf": "1",
+    "goalsAwayHalf": "4"
+  },
+  {
+    "...": "..."
+  }
+]
+```
+
+### Get the game duration of a team kind
+
+When you want to get the game duration of an A-Junioren team, you can use the following API-call:
+
+```http
+GET /gamesduration/teamkind/A-Junioren
+```
+
+You get a response in form of a simple integer. That is the game time in minutes:
+
+```json
+90
 ```
 
 ## Roadmap
