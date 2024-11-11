@@ -23,7 +23,8 @@ public class TeamsOfAClubScraper(string clubId, string season)
         foreach (var h4Node in doc.DocumentNode.SelectNodes("//h4/a"))
         {
             // Den Link-Text und die URL extrahieren
-            var name = h4Node.InnerText.Trim();
+            var name = h4Node.InnerText.Split(" - ")[1].Trim();
+            var kind = h4Node.InnerText.Split(" - ")[0].Trim();
             var link = h4Node.GetAttributeValue("href", string.Empty);
 
             // Team-ID aus dem Link extrahieren, wenn im Link enthalten
@@ -32,7 +33,7 @@ public class TeamsOfAClubScraper(string clubId, string season)
             // Neues Team-Objekt erstellen und zur Liste hinzufügen
             if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(link))
             {
-                teams.Add(new Team(id, ClubId, name, link, LogoUrl));
+                teams.Add(new Team(id, ClubId, name, link, LogoUrl, kind));
             }
         }
 
