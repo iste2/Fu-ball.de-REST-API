@@ -112,8 +112,9 @@ public class GamesScraper(string url)
         return games;
     }
 
-    private async Task<string> GetHomeSideKind(string link)
+    private static async Task<string> GetHomeSideKind(string link)
     {
+        if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
         
@@ -155,6 +156,7 @@ public class GamesScraper(string url)
     
     private static async Task<string> GetClubIdFromLink(string link)
     {
+        if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
         
