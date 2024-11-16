@@ -130,11 +130,7 @@ public class GamesScraper(string url)
     private static string ExtractTeamId(string link)
     {
         var parts = link.Split(["team-id/"], StringSplitOptions.None);
-        if (parts.Length > 1)
-        {
-            return parts[1].Split('/')[0];
-        }
-        return string.Empty;
+        return parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
     }
 
     private static string ExtractGameId(string link)
