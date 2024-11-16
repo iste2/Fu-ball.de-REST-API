@@ -20,63 +20,90 @@ app.UseOutputCache();
 
 app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =>
     {
-        var parser = new TeamsOfAClubScraper(id, season);
-        var teams = await parser.Scrape();
-        return Results.Ok(teams);
+        try
+        {
+            var parser = new TeamsOfAClubScraper(id, season);
+            var teams = await parser.Scrape();
+            return Results.Json(teams);
+        } catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
 app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
     {
-        var parser = new GamesOfTeamScraper(id, start, end);
-        var games = await parser.Scrape();
-        return Results.Ok(games);
+        try
+        {
+            var parser = new GamesOfTeamScraper(id, start, end);
+            var games = await parser.Scrape();
+            return Results.Json(games);
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
 app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
     {
-        var seasons = Utils.Seasons(DateTime.ParseExact(start, "dd.MM.yyyy", CultureInfo.InvariantCulture), DateTime.ParseExact(end, "dd.MM.yyyy", CultureInfo.InvariantCulture));
-        var allTeams = new List<Team>();
-        var allGames = new List<Game>();
-        
-        foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season)))
+        try
         {
-            var teamsOfSeason = await teamsParser.Scrape();
-            allTeams.AddRange(teamsOfSeason);
+            var seasons = Utils.Seasons(DateTime.ParseExact(start, "dd.MM.yyyy", CultureInfo.InvariantCulture), DateTime.ParseExact(end, "dd.MM.yyyy", CultureInfo.InvariantCulture));
+            var allTeams = new List<Team>();
+            var allGames = new List<Game>();
+        
+            foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season)))
+            {
+                var teamsOfSeason = await teamsParser.Scrape();
+                allTeams.AddRange(teamsOfSeason);
+            }
+            var teams = allTeams.DistinctBy(team => team.Id).ToList();
+        
+        
+            foreach (var gamesParser in teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)))
+            {
+                var games = await gamesParser.Scrape();
+                allGames.AddRange(games);
+            }
+        
+            return Results.Json(allGames);
         }
-        var teams = allTeams.DistinctBy(team => team.Id).ToList();
-        
-        
-        foreach (var gamesParser in teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)))
+        catch (Exception e)
         {
-            var games = await gamesParser.Scrape();
-            allGames.AddRange(games);
+            return Results.BadRequest(e.Message);
         }
-        
-        return Results.Ok(allGames);
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
 app.MapGet("/gamesduration/teamkind/{teamkind}", (string teamkind) =>
     {
-        var duration = teamkind switch
+        try
         {
-            TeamKinds.Herren => TeamKindGameDurations.Herren,
-            TeamKinds.Frauen => TeamKindGameDurations.Frauen,
-            TeamKinds.AJunioren => TeamKindGameDurations.AJunioren,
-            TeamKinds.BJunioren => TeamKindGameDurations.BJunioren,
-            TeamKinds.CJunioren => TeamKindGameDurations.CJunioren,
-            TeamKinds.DJunioren => TeamKindGameDurations.DJunioren,
-            TeamKinds.EJunioren => TeamKindGameDurations.EJunioren,
-            TeamKinds.FJunioren => TeamKindGameDurations.FJunioren,
-            TeamKinds.AJuniorinnen => TeamKindGameDurations.AJuniorinnen,
-            TeamKinds.BJuniorinnen => TeamKindGameDurations.BJuniorinnen,
-            TeamKinds.CJuniorinnen => TeamKindGameDurations.CJuniorinnen,
-            TeamKinds.DJuniorinnen => TeamKindGameDurations.DJuniorinnen,
-            _ => 0
-        };
-        return Results.Ok(duration);
+            var duration = teamkind switch
+            {
+                TeamKinds.Herren => TeamKindGameDurations.Herren,
+                TeamKinds.Frauen => TeamKindGameDurations.Frauen,
+                TeamKinds.AJunioren => TeamKindGameDurations.AJunioren,
+                TeamKinds.BJunioren => TeamKindGameDurations.BJunioren,
+                TeamKinds.CJunioren => TeamKindGameDurations.CJunioren,
+                TeamKinds.DJunioren => TeamKindGameDurations.DJunioren,
+                TeamKinds.EJunioren => TeamKindGameDurations.EJunioren,
+                TeamKinds.FJunioren => TeamKindGameDurations.FJunioren,
+                TeamKinds.AJuniorinnen => TeamKindGameDurations.AJuniorinnen,
+                TeamKinds.BJuniorinnen => TeamKindGameDurations.BJuniorinnen,
+                TeamKinds.CJuniorinnen => TeamKindGameDurations.CJuniorinnen,
+                TeamKinds.DJuniorinnen => TeamKindGameDurations.DJuniorinnen,
+                _ => 0
+            };
+            return Results.Ok(duration);
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     });
 
 app.Run();
