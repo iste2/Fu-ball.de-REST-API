@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using HtmlAgilityPack;
 
@@ -5,6 +6,9 @@ namespace Fußball.de.Scraping;
 
 public class GamesScraper(string url)
 {
+    private Dictionary<string, string> GetClubIdFromLinkCache { get; } = new();
+    private Dictionary<string, string> GetKindCache { get; } = new();
+    
     public async Task<List<Game>> Scrape()
     {
         var games = new List<Game>();
@@ -32,14 +36,18 @@ public class GamesScraper(string url)
             }
             else
             {
+                
                 var homeTeamNode = row.SelectSingleNode(".//td[@class='column-club'][1]/a");
                 var awayTeamNode = row.SelectSingleNode(".//td[@class='column-club no-border']/a");
                 var gameLinkNode = row.SelectSingleNode(".//td[@class='column-score']/a");
 
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
                 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                
                 var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
-                var homeSideKind = await GetHomeSideKind(homeTeamNode.GetAttributeValue("href", ""));
+                var homeSideKind = await GetKind(homeTeamNode.GetAttributeValue("href", ""));
                 
                 var homeSide = new Team(
                     ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")),
@@ -52,7 +60,7 @@ public class GamesScraper(string url)
                 );
 
                 var awayClubId = await GetClubIdFromLink(awayTeamNode.GetAttributeValue("href", ""));
-                var awaySideKind = await GetHomeSideKind(awayTeamNode.GetAttributeValue("href", ""));
+                var awaySideKind = await GetKind(awayTeamNode.GetAttributeValue("href", ""));
                 
                 var awaySide = new Team(
                     ExtractTeamId(awayTeamNode.GetAttributeValue("href", "")),
@@ -108,14 +116,17 @@ public class GamesScraper(string url)
                 );
 
                 games.Add(game);
+                stopwatch.Stop();
+                Console.WriteLine($"Scraped game {game.Id} in {stopwatch.ElapsedMilliseconds}ms");
             }
         }
         
         return games;
     }
 
-    private static async Task<string> GetHomeSideKind(string link)
+    private async Task<string> GetKind(string link)
     {
+        if (GetKindCache.TryGetValue(link, out var value)) return value;
         if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
@@ -124,6 +135,7 @@ public class GamesScraper(string url)
         doc.LoadHtml(response);
         
         var kind = doc.DocumentNode.SelectSingleNode("//p[@class='subline']").InnerText.Split("\n\t\t\t\t&#124;\n\t\t\t\t")[0].Trim();
+        GetKindCache[link] = kind;
         return kind;
     }
 
@@ -145,8 +157,9 @@ public class GamesScraper(string url)
         return DateTime.TryParseExact(dateText, dateFormat, null, DateTimeStyles.None, out var date) ? date : null;
     }
     
-    private static async Task<string> GetClubIdFromLink(string link)
+    private async Task<string> GetClubIdFromLink(string link)
     {
+        if (GetClubIdFromLinkCache.TryGetValue(link, out var value)) return value;
         if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
@@ -156,6 +169,7 @@ public class GamesScraper(string url)
         
         var clubLink = doc.DocumentNode.SelectNodes("//p[@class='subline']//a")[1].GetAttributeValue("href", "");
         var clubId = clubLink?.Split(["id/"], StringSplitOptions.None)[1] ?? "";
+        GetClubIdFromLinkCache[link] = clubId;
         return clubId;
     }
 }
