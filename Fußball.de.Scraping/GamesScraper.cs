@@ -145,14 +145,7 @@ public class GamesScraper(string url)
     private static DateTime? ParseDateTime(string dateText)
     {
         const string dateFormat = "dd.MM.yy HH:mm";
-        try
-        {
-            return DateTime.ParseExact(dateText, dateFormat, null, DateTimeStyles.None);
-        }
-        catch
-        {
-            return null;
-        }
+        return DateTime.TryParseExact(dateText, dateFormat, null, DateTimeStyles.None, out var date) ? date : null;
     }
     
     private static async Task<string> GetClubIdFromLink(string link)
