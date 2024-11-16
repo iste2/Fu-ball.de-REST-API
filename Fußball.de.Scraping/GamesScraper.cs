@@ -24,8 +24,9 @@ public class GamesScraper(string url)
         {
             if (row.HasClass("row-competition"))
             {
-                var dateText = row.SelectSingleNode(".//td[@class='column-date']").InnerText.Replace("|&nbsp;", "").Split(",")[1].Trim();
-                currentKickOff = ParseDateTime(dateText);
+                var dateEntries = row.SelectSingleNode(".//td[@class='column-date']").InnerText.Replace("|&nbsp;", "").Split(",");
+                var dateText = dateEntries.Length > 1 ? dateEntries[1].Trim() : "";
+                currentKickOff = string.IsNullOrEmpty(dateText) ? null : ParseDateTime(dateText);
                 currentLeague = row.SelectSingleNode(".//td[@colspan='3']/a").InnerText.Trim();
             }
             else
