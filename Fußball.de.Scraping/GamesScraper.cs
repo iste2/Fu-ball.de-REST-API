@@ -16,6 +16,7 @@ public class GamesScraper(string url)
         doc.LoadHtml(response);
         
         var rows = doc.DocumentNode.SelectNodes("//tr");
+        if(rows == null) return games;
         
         DateTime? currentKickOff = null;
         var currentLeague = "";
