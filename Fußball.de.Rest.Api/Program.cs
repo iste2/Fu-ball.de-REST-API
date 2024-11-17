@@ -30,7 +30,7 @@ app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =
             return Results.Json(teams);
         } catch (Exception e)
         {
-            return Results.BadRequest(e.Message);
+            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -45,7 +45,7 @@ app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string 
         }
         catch (Exception e)
         {
-            return Results.BadRequest(e.Message);
+            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -67,7 +67,7 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
 
             await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)), ScrapeGamesOfTeam);
         
-            return Results.Json(allGames);
+            return Results.Json(allGames.ToArray());
 
             async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
             {
@@ -77,7 +77,7 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
         }
         catch (Exception e)
         {
-            return Results.BadRequest(e.Message);
+            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -106,7 +106,7 @@ app.MapGet("/gamesduration/teamkind/{teamkind}", (string teamkind) =>
         }
         catch (Exception e)
         {
-            return Results.BadRequest(e.Message);
+            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
         }
     });
 
