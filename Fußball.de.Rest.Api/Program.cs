@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using Fußball.de.Rest.Api;
 using Fußball.de.Scraping;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 var app = builder.Build();
 
+var log = LoggerBuilder.BuildLogger(app.Environment.IsDevelopment());
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors(policyBuilder => policyBuilder.AllowAnyOrigin());
@@ -23,14 +27,17 @@ app.UseOutputCache();
 
 app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =>
     {
+        log.Information($"Calling teams/club/{id}/season/{season}");
         try
         {
-            var parser = new TeamsOfAClubScraper(id, season);
+            var parser = new TeamsOfAClubScraper(id, season, log);
             var teams = await parser.Scrape();
+            log.Information("Finished scraping teams of club {ClubId} in season {Season}\n{Teams}", id, season, JsonConvert.SerializeObject(teams));
             return Results.Json(teams);
         } catch (Exception e)
         {
-            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
+            log.Error(e, $"Error in /teams/club/{id}/season/{season}");
+            return Results.BadRequest(e);
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -39,13 +46,15 @@ app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string 
     {
         try
         {
-            var parser = new GamesOfTeamScraper(id, start, end);
+            var parser = new GamesOfTeamScraper(id, start, end, log);
             var games = await parser.Scrape();
+            log.Information("Finished scraping games of team {TeamId}\n{Games}", id, JsonConvert.SerializeObject(games));
             return Results.Json(games);
         }
         catch (Exception e)
         {
-            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
+            log.Error(e, $"Error in /games/team/{id}/start/{start}/end/{end}");
+            return Results.BadRequest(e);
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -58,15 +67,15 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
             var allTeams = new List<Team>();
             var allGames = new ConcurrentBag<Game>();
         
-            foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season)))
+            foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season, log)))
             {
                 var teamsOfSeason = await teamsParser.Scrape();
                 allTeams.AddRange(teamsOfSeason);
             }
             var teams = allTeams.DistinctBy(team => team.Id).ToList();
 
-            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)), ScrapeGamesOfTeam);
-        
+            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end, log)), ScrapeGamesOfTeam);
+            log.Information("Finished scraping games of all teams\n{Games}", JsonConvert.SerializeObject(allGames));
             return Results.Json(allGames.ToArray());
 
             async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
@@ -77,7 +86,8 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
         }
         catch (Exception e)
         {
-            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
+            log.Error(e, $"Error in /games/club/{id}/start/{start}/end/{end}");
+            return Results.BadRequest(e);
         }
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
@@ -106,7 +116,8 @@ app.MapGet("/gamesduration/teamkind/{teamkind}", (string teamkind) =>
         }
         catch (Exception e)
         {
-            return Results.BadRequest($"Error: \n{e.Message}\n{e.StackTrace}");
+            log.Error(e, $"Error in /gamesduration/teamkind/{teamkind}");
+            return Results.BadRequest(e);
         }
     });
 
