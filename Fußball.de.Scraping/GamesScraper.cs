@@ -5,6 +5,11 @@ namespace Fußball.de.Scraping;
 
 public class GamesScraper(string url)
 {
+    private Dictionary<string, string> GetClubIdFromLinkCache { get; } = new();
+    private Dictionary<string, string> GetKindCache { get; } = new();
+    private Dictionary<string, string> ExtractTeamIdCache { get; } = new();
+    private Dictionary<string, string> ExtractGameIdCache { get; } = new();
+    
     public async Task<List<Game>> Scrape()
     {
         var games = new List<Game>();
@@ -16,6 +21,7 @@ public class GamesScraper(string url)
         doc.LoadHtml(response);
         
         var rows = doc.DocumentNode.SelectNodes("//tr");
+        if(rows == null) return games;
         
         DateTime? currentKickOff = null;
         var currentLeague = "";
@@ -24,12 +30,14 @@ public class GamesScraper(string url)
         {
             if (row.HasClass("row-competition"))
             {
-                var dateText = row.SelectSingleNode(".//td[@class='column-date']").InnerText.Replace("|&nbsp;", "").Split(",")[1].Trim();
-                currentKickOff = ParseDateTime(dateText);
+                var dateEntries = row.SelectSingleNode(".//td[@class='column-date']").InnerText.Replace("|&nbsp;", "").Split(",");
+                var dateText = dateEntries.Length > 1 ? dateEntries[1].Trim() : "";
+                currentKickOff = string.IsNullOrEmpty(dateText) ? null : ParseDateTime(dateText);
                 currentLeague = row.SelectSingleNode(".//td[@colspan='3']/a").InnerText.Trim();
             }
             else
             {
+                
                 var homeTeamNode = row.SelectSingleNode(".//td[@class='column-club'][1]/a");
                 var awayTeamNode = row.SelectSingleNode(".//td[@class='column-club no-border']/a");
                 var gameLinkNode = row.SelectSingleNode(".//td[@class='column-score']/a");
@@ -37,7 +45,7 @@ public class GamesScraper(string url)
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
                 
                 var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
-                var homeSideKind = await GetHomeSideKind(homeTeamNode.GetAttributeValue("href", ""));
+                var homeSideKind = await GetKind(homeTeamNode.GetAttributeValue("href", ""));
                 
                 var homeSide = new Team(
                     ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")),
@@ -50,7 +58,7 @@ public class GamesScraper(string url)
                 );
 
                 var awayClubId = await GetClubIdFromLink(awayTeamNode.GetAttributeValue("href", ""));
-                var awaySideKind = await GetHomeSideKind(awayTeamNode.GetAttributeValue("href", ""));
+                var awaySideKind = await GetKind(awayTeamNode.GetAttributeValue("href", ""));
                 
                 var awaySide = new Team(
                     ExtractTeamId(awayTeamNode.GetAttributeValue("href", "")),
@@ -61,7 +69,8 @@ public class GamesScraper(string url)
                     awaySideKind
                 );
 
-                var responseFromGameLink = await client.GetStringAsync(gameLinkNode.GetAttributeValue("href", ""));
+                var gameLink = gameLinkNode.GetAttributeValue("href", "");
+                var responseFromGameLink = await client.GetStringAsync(gameLink);
                 var gameDoc = new HtmlDocument();
                 gameDoc.LoadHtml(responseFromGameLink);
                 
@@ -89,9 +98,9 @@ public class GamesScraper(string url)
                 var goalsAway = goalsAwayNodes?.Count.ToString() ?? (goalsAwayHalf == "-" ? "-" : "0");
                 
                 var game = new Game(
-                    ExtractGameId(gameLinkNode.GetAttributeValue("href", "")),
+                    ExtractGameId(gameLink),
                     currentKickOff.Value,
-                    gameLinkNode.GetAttributeValue("href", ""),
+                    gameLink,
                     homeSide,
                     awaySide,
                     currentLeague,
@@ -112,8 +121,9 @@ public class GamesScraper(string url)
         return games;
     }
 
-    private static async Task<string> GetHomeSideKind(string link)
+    private async Task<string> GetKind(string link)
     {
+        if (GetKindCache.TryGetValue(link, out var value)) return value;
         if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
@@ -122,40 +132,37 @@ public class GamesScraper(string url)
         doc.LoadHtml(response);
         
         var kind = doc.DocumentNode.SelectSingleNode("//p[@class='subline']").InnerText.Split("\n\t\t\t\t&#124;\n\t\t\t\t")[0].Trim();
+        GetKindCache[link] = kind;
         return kind;
     }
 
-    private static string ExtractTeamId(string link)
+    private string ExtractTeamId(string link)
     {
+        if (ExtractTeamIdCache.TryGetValue(link, out var value)) return value;
         var parts = link.Split(["team-id/"], StringSplitOptions.None);
-        if (parts.Length > 1)
-        {
-            return parts[1].Split('/')[0];
-        }
-        return string.Empty;
+        var teamId = parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
+        ExtractTeamIdCache[link] = teamId;
+        return teamId;
     }
 
-    private static string ExtractGameId(string link)
+    private string ExtractGameId(string link)
     {
+        if (ExtractGameIdCache.TryGetValue(link, out var value)) return value;
         var parts = link.Split(["spiel/"], StringSplitOptions.None);
-        return parts.Length > 2 ? parts[2] : string.Empty;
+        var gameId = parts.Length > 2 ? parts[2] : string.Empty;
+        ExtractGameIdCache[link] = gameId;
+        return gameId;
     }
 
     private static DateTime? ParseDateTime(string dateText)
     {
         const string dateFormat = "dd.MM.yy HH:mm";
-        try
-        {
-            return DateTime.ParseExact(dateText, dateFormat, null, DateTimeStyles.None);
-        }
-        catch
-        {
-            return null;
-        }
+        return DateTime.TryParseExact(dateText, dateFormat, null, DateTimeStyles.None, out var date) ? date : null;
     }
     
-    private static async Task<string> GetClubIdFromLink(string link)
+    private async Task<string> GetClubIdFromLink(string link)
     {
+        if (GetClubIdFromLinkCache.TryGetValue(link, out var value)) return value;
         if (string.IsNullOrEmpty(link) || link == "#") return "";
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
@@ -165,6 +172,7 @@ public class GamesScraper(string url)
         
         var clubLink = doc.DocumentNode.SelectNodes("//p[@class='subline']//a")[1].GetAttributeValue("href", "");
         var clubId = clubLink?.Split(["id/"], StringSplitOptions.None)[1] ?? "";
+        GetClubIdFromLinkCache[link] = clubId;
         return clubId;
     }
 }
