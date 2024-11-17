@@ -67,7 +67,7 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
 
             await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)), ScrapeGamesOfTeam);
         
-            return Results.Json(allGames);
+            return Results.Json(allGames.ToArray());
 
             async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
             {
