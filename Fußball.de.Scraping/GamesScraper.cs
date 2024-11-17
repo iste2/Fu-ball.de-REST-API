@@ -8,6 +8,8 @@ public class GamesScraper(string url)
 {
     private Dictionary<string, string> GetClubIdFromLinkCache { get; } = new();
     private Dictionary<string, string> GetKindCache { get; } = new();
+    private Dictionary<string, string> ExtractTeamIdCache { get; } = new();
+    private Dictionary<string, string> ExtractGameIdCache { get; } = new();
     
     public async Task<List<Game>> Scrape()
     {
@@ -71,7 +73,8 @@ public class GamesScraper(string url)
                     awaySideKind
                 );
 
-                var responseFromGameLink = await client.GetStringAsync(gameLinkNode.GetAttributeValue("href", ""));
+                var gameLink = gameLinkNode.GetAttributeValue("href", "");
+                var responseFromGameLink = await client.GetStringAsync(gameLink);
                 var gameDoc = new HtmlDocument();
                 gameDoc.LoadHtml(responseFromGameLink);
                 
@@ -99,9 +102,9 @@ public class GamesScraper(string url)
                 var goalsAway = goalsAwayNodes?.Count.ToString() ?? (goalsAwayHalf == "-" ? "-" : "0");
                 
                 var game = new Game(
-                    ExtractGameId(gameLinkNode.GetAttributeValue("href", "")),
+                    ExtractGameId(gameLink),
                     currentKickOff.Value,
-                    gameLinkNode.GetAttributeValue("href", ""),
+                    gameLink,
                     homeSide,
                     awaySide,
                     currentLeague,
@@ -139,16 +142,22 @@ public class GamesScraper(string url)
         return kind;
     }
 
-    private static string ExtractTeamId(string link)
+    private string ExtractTeamId(string link)
     {
+        if (ExtractTeamIdCache.TryGetValue(link, out var value)) return value;
         var parts = link.Split(["team-id/"], StringSplitOptions.None);
-        return parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
+        var teamId = parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
+        ExtractTeamIdCache[link] = teamId;
+        return teamId;
     }
 
-    private static string ExtractGameId(string link)
+    private string ExtractGameId(string link)
     {
+        if (ExtractGameIdCache.TryGetValue(link, out var value)) return value;
         var parts = link.Split(["spiel/"], StringSplitOptions.None);
-        return parts.Length > 2 ? parts[2] : string.Empty;
+        var gameId = parts.Length > 2 ? parts[2] : string.Empty;
+        ExtractGameIdCache[link] = gameId;
+        return gameId;
     }
 
     private static DateTime? ParseDateTime(string dateText)
