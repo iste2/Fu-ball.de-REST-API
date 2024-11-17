@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using HtmlAgilityPack;
 
@@ -44,9 +43,6 @@ public class GamesScraper(string url)
                 var gameLinkNode = row.SelectSingleNode(".//td[@class='column-score']/a");
 
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
-                
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
                 
                 var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
                 var homeSideKind = await GetKind(homeTeamNode.GetAttributeValue("href", ""));
@@ -119,8 +115,6 @@ public class GamesScraper(string url)
                 );
 
                 games.Add(game);
-                stopwatch.Stop();
-                Console.WriteLine($"Scraped game {game.Id} in {stopwatch.ElapsedMilliseconds}ms");
             }
         }
         
