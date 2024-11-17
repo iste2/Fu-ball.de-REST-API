@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using Fußball.de.Rest.Api;
 using Fußball.de.Scraping;
@@ -55,7 +56,7 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
         {
             var seasons = Utils.Seasons(DateTime.ParseExact(start, "dd.MM.yyyy", CultureInfo.InvariantCulture), DateTime.ParseExact(end, "dd.MM.yyyy", CultureInfo.InvariantCulture));
             var allTeams = new List<Team>();
-            var allGames = new List<Game>();
+            var allGames = new ConcurrentBag<Game>();
         
             foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season)))
             {
@@ -63,15 +64,16 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
                 allTeams.AddRange(teamsOfSeason);
             }
             var teams = allTeams.DistinctBy(team => team.Id).ToList();
-        
-        
-            foreach (var gamesParser in teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)))
-            {
-                var games = await gamesParser.Scrape();
-                allGames.AddRange(games);
-            }
+
+            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end)), ScrapeGamesOfTeam);
         
             return Results.Json(allGames);
+
+            async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
+            {
+                var games = await gamesParser.Scrape();
+                foreach (var game in games) allGames.Add(game);
+            }
         }
         catch (Exception e)
         {
