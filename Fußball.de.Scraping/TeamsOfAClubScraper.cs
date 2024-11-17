@@ -1,8 +1,9 @@
 using HtmlAgilityPack;
+using Serilog.Core;
 
 namespace Fußball.de.Scraping;
 
-public class TeamsOfAClubScraper(string clubId, string season)
+public class TeamsOfAClubScraper(string clubId, string season, Logger log)
 {
     private string ClubId { get; } = clubId;
     private string Season { get; } = season;
@@ -31,10 +32,9 @@ public class TeamsOfAClubScraper(string clubId, string season)
             var id = ExtractTeamId(link);
 
             // Neues Team-Objekt erstellen und zur Liste hinzufügen
-            if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(link))
-            {
-                teams.Add(new Team(id, ClubId, name, link, LogoUrl, kind));
-            }
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name) || string.IsNullOrEmpty(link)) continue;
+            teams.Add(new Team(id, ClubId, name, link, LogoUrl, kind));
+            log.Information("Team {TeamId} added", id);
         }
 
         return teams;

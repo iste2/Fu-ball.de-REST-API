@@ -1,9 +1,10 @@
 using System.Globalization;
 using HtmlAgilityPack;
+using Serilog.Core;
 
 namespace Fußball.de.Scraping;
 
-public class GamesScraper(string url)
+public class GamesScraper(string url, Logger log)
 {
     private Dictionary<string, string> GetClubIdFromLinkCache { get; } = new();
     private Dictionary<string, string> GetKindCache { get; } = new();
@@ -21,7 +22,11 @@ public class GamesScraper(string url)
         doc.LoadHtml(response);
         
         var rows = doc.DocumentNode.SelectNodes("//tr");
-        if(rows == null) return games;
+        if (rows == null)
+        {
+            log.Warning("No games found in {Url}", url);
+            return games;
+        }
         
         DateTime? currentKickOff = null;
         var currentLeague = "";
@@ -115,6 +120,7 @@ public class GamesScraper(string url)
                 );
 
                 games.Add(game);
+                log.Information("Game {GameId} added", game.Id);
             }
         }
         
