@@ -59,7 +59,7 @@ app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string 
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
-app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
+app.MapGet("/games/club/{id}/start/{start}/end/{end}/homegamesonly/{homeGamesOnly:bool}", async (string id, string start, string end, bool homeGamesOnly) =>
     {
         try
         {
@@ -74,7 +74,7 @@ app.MapGet("/games/club/{id}/start/{start}/end/{end}", async (string id, string 
             }
             var teams = allTeams.DistinctBy(team => team.Id).ToList();
 
-            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end, log)), ScrapeGamesOfTeam);
+            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end, log, homeGamesOnly)), ScrapeGamesOfTeam);
             log.Information("Finished scraping games of all teams\n{Games}", JsonConvert.SerializeObject(allGames));
             return Results.Json(allGames.ToArray());
 
