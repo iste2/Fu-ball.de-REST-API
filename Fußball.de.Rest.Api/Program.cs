@@ -61,34 +61,13 @@ app.MapGet("/games/team/{id}", async ([FromRoute]string id, [FromQuery]string st
 
 app.MapGet("/games/club/{id}", async ([FromRoute]string id, [FromQuery]string start, [FromQuery]string end, [FromQuery]bool homeGamesOnly = false) =>
     {
-        try
-        {
-            var seasons = Utils.Seasons(DateTime.ParseExact(start, "dd.MM.yyyy", CultureInfo.InvariantCulture), DateTime.ParseExact(end, "dd.MM.yyyy", CultureInfo.InvariantCulture));
-            var allTeams = new List<Team>();
-            var allGames = new ConcurrentBag<Game>();
-        
-            foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(id, season, log)))
-            {
-                var teamsOfSeason = await teamsParser.Scrape();
-                allTeams.AddRange(teamsOfSeason);
-            }
-            var teams = allTeams.DistinctBy(team => team.Id).ToList();
+        return await GetGamesOfClub(start, end, id, homeGamesOnly);
+    })
+    .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
-            await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end, log, homeGamesOnly)), ScrapeGamesOfTeam);
-            log.Information("Finished scraping games of all teams\n{Games}", JsonConvert.SerializeObject(allGames));
-            return Results.Json(allGames.ToArray());
-
-            async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
-            {
-                var games = await gamesParser.Scrape();
-                foreach (var game in games) allGames.Add(game);
-            }
-        }
-        catch (Exception e)
-        {
-            log.Error(e, $"Error in /games/club/{id}/start/{start}/end/{end}");
-            return Results.BadRequest(e);
-        }
+app.MapGet("/games/club/{id}/start/{start}/end/{end}/homegamesonly/{homeGamesOnly}", async ([FromRoute]string id, [FromRoute]string start, [FromRoute]string end, [FromRoute]bool homeGamesOnly = false) =>
+    {
+        return await GetGamesOfClub(start, end, id, homeGamesOnly);
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
@@ -122,3 +101,36 @@ app.MapGet("/gamesduration/teamkind/{teamkind}", (string teamkind) =>
     });
 
 app.Run();
+return;
+
+async Task<IResult> GetGamesOfClub(string start, string end, string clubId, bool homeGamesOnly)
+{
+    try
+    {
+        var seasons = Utils.Seasons(DateTime.ParseExact(start, "dd.MM.yyyy", CultureInfo.InvariantCulture), DateTime.ParseExact(end, "dd.MM.yyyy", CultureInfo.InvariantCulture));
+        var allTeams = new List<Team>();
+        var allGames = new ConcurrentBag<Game>();
+        
+        foreach (var teamsParser in seasons.Select(season => new TeamsOfAClubScraper(clubId, season, log)))
+        {
+            var teamsOfSeason = await teamsParser.Scrape();
+            allTeams.AddRange(teamsOfSeason);
+        }
+        var teams = allTeams.DistinctBy(team => team.Id).ToList();
+
+        await Parallel.ForEachAsync(teams.Select(team => new GamesOfTeamScraper(team.Id, start, end, log, homeGamesOnly)), ScrapeGamesOfTeam);
+        log.Information("Finished scraping games of all teams\n{Games}", JsonConvert.SerializeObject(allGames));
+        return Results.Json(allGames.ToArray());
+
+        async ValueTask ScrapeGamesOfTeam(GamesOfTeamScraper gamesParser, CancellationToken token)
+        {
+            var games = await gamesParser.Scrape();
+            foreach (var game in games) allGames.Add(game);
+        }
+    }
+    catch (Exception e)
+    {
+        log.Error(e, $"Error in /games/club/{clubId}/start/{start}/end/{end}");
+        return Results.BadRequest(e);
+    }
+}
