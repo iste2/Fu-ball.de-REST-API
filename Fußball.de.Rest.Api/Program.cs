@@ -59,7 +59,7 @@ app.MapGet("/games/team/{id}", async ([FromRoute]string id, [FromQuery]string st
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
-app.MapGet("/games/club/{id}", async ([FromRoute]string id, [FromQuery]string start, [FromQuery]string end, [FromQuery]bool homeGamesOnly) =>
+app.MapGet("/games/club/{id}", async ([FromRoute]string id, [FromQuery]string start, [FromQuery]string end, [FromQuery]bool homeGamesOnly = false) =>
     {
         try
         {

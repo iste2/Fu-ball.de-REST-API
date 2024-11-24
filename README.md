@@ -45,21 +45,21 @@ GET /teams/club/{id}/season/{season}
 #### Get games of a team
 
 ```http
-GET /games/team/{id}/start/{start}/end/{end}
+GET /games/team/{id}?start={start}&end={end}
 ```
 
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `id`      | `string` | **Required**. Id of the team |
-| `start`      | `string` | **Required**. Earliest date (Format: dd.MM.yyyy) |
-| `end`      | `string` | **Required**. Latest date (Format: dd.MM.yyyy) |
+| Parameter       | Type     | Description                                                           |
+|:----------------|:---------|:----------------------------------------------------------------------|
+| `id`            | `string` | **Required**. Id of the team                                          |
+| `start`         | `string` | **Required**. Earliest date (Format: dd.MM.yyyy)                      |
+| `end`           | `string` | **Required**. Latest date (Format: dd.MM.yyyy)                        |
 
 A maximum of 100 games can be loaded in one call.
 
 #### Get games of a club
 
 ```http
-GET /games/club/{id}/start/{start}/end/{end}
+GET /games/club/{id}?start={start}&end={end}&homeGamesOnly={homeGamesOnly}
 ```
 
 | Parameter | Type     | Description                                      |
@@ -67,6 +67,7 @@ GET /games/club/{id}/start/{start}/end/{end}
 | `id`      | `string` | **Required**. Id of the club                     |
 | `start`      | `string` | **Required**. Earliest date (Format: dd.MM.yyyy) |
 | `end`      | `string` | **Required**. Latest date (Format: dd.MM.yyyy)   |
+| `homeGamesOnly` | `bool`   | True, if only home games of the club should be returned |
 
 #### Get games duration of a team kind
 
@@ -125,7 +126,7 @@ You are interested in the timespan 01.01.2024 - 30.06.2024.
 So your API-call looks like:
 
 ```http
-GET /games/team/011MIF5Q28000000VTVG0001VTR8C1K7/start/01.01.2024/end/30.06.2024
+GET /games/team/011MIF5Q28000000VTVG0001VTR8C1K7?start=01.01.2024&end=30.06.2024
 ```
 
 You get a response in form of a json list:
@@ -196,7 +197,7 @@ You are interested in the timespan 09.11.2024 - 09.11.2024, so specifically the 
 So your API-call looks like:
 
 ```http
-GET /games/club/00ES8GN92C0000B1VV0AG08LVUPGND5I/start/09.11.2024/end/09.11.2024
+GET /games/club/00ES8GN92C0000B1VV0AG08LVUPGND5I?start=09.11.2024&end=09.11.2024
 ```
 
 You get a response in form of a json list:
