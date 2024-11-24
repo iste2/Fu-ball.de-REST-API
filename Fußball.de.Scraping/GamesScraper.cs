@@ -50,27 +50,27 @@ public class GamesScraper(string url, Logger log, string teamId, bool onlyHomeGa
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
                 if(onlyHomeGames && ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")) != teamId) continue;
                 
-                var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
-                var homeSideKind = await GetKind(homeTeamNode.GetAttributeValue("href", ""));
+                var homeTeamLink = homeTeamNode.GetAttributeValue("href", "");
+                var (homeClubId, homeSideKind) = await GetTeamValuesFromLink(homeTeamLink);
                 
                 var homeSide = new Team(
                     ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")),
                     homeClubId,
                     homeTeamNode.SelectSingleNode(".//div[@class='club-name']").InnerText.Trim(),
-                    homeTeamNode.GetAttributeValue("href", ""),
+                    homeTeamLink,
                     $"https://www.fussball.de/export.media/-/action/getLogo/format/12/id/{homeClubId}",
                     homeSideKind
                     
                 );
 
-                var awayClubId = await GetClubIdFromLink(awayTeamNode.GetAttributeValue("href", ""));
-                var awaySideKind = await GetKind(awayTeamNode.GetAttributeValue("href", ""));
+                var awayTeamLink = awayTeamNode.GetAttributeValue("href", "");
+                var (awayClubId, awaySideKind) = await GetTeamValuesFromLink(awayTeamLink);
                 
                 var awaySide = new Team(
                     ExtractTeamId(awayTeamNode.GetAttributeValue("href", "")),
                     awayClubId,
                     awayTeamNode.SelectSingleNode(".//div[@class='club-name']").InnerText.Trim(),
-                    awayTeamNode.GetAttributeValue("href", ""),
+                    awayTeamLink,
                     $"https://www.fussball.de/export.media/-/action/getLogo/format/12/id/{awayClubId}",
                     awaySideKind
                 );
@@ -128,28 +128,13 @@ public class GamesScraper(string url, Logger log, string teamId, bool onlyHomeGa
         return games;
     }
 
-    private async Task<string> GetKind(string link)
-    {
-        if (GetKindCache.TryGetValue(link, out var value)) return value;
-        if (string.IsNullOrEmpty(link) || link == "#") return "";
-        var client = new HttpClient();
-        var response = await client.GetStringAsync(link);
-        
-        var doc = new HtmlDocument();
-        doc.LoadHtml(response);
-        
-        var kind = doc.DocumentNode.SelectSingleNode("//p[@class='subline']").InnerText.Split("\n\t\t\t\t&#124;\n\t\t\t\t")[0].Trim();
-        GetKindCache[link] = kind;
-        return kind;
-    }
-
     private string ExtractTeamId(string link)
     {
         if (ExtractTeamIdCache.TryGetValue(link, out var value)) return value;
         var parts = link.Split(["team-id/"], StringSplitOptions.None);
-        var teamId = parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
-        ExtractTeamIdCache[link] = teamId;
-        return teamId;
+        var linkTeamId = parts.Length > 1 ? parts[1].Split('/')[0] : string.Empty;
+        ExtractTeamIdCache[link] = linkTeamId;
+        return linkTeamId;
     }
 
     private string ExtractGameId(string link)
@@ -167,19 +152,40 @@ public class GamesScraper(string url, Logger log, string teamId, bool onlyHomeGa
         return DateTime.TryParseExact(dateText, dateFormat, null, DateTimeStyles.None, out var date) ? date : null;
     }
     
-    private async Task<string> GetClubIdFromLink(string link)
+    private async Task<(string, string)> GetTeamValuesFromLink(string link)
     {
-        if (GetClubIdFromLinkCache.TryGetValue(link, out var value)) return value;
-        if (string.IsNullOrEmpty(link) || link == "#") return "";
+        var clubId = "";
+        var kind = "";
+        if (GetClubIdFromLinkCache.TryGetValue(link, out var clubIdValue))
+        {
+            clubId = clubIdValue;
+        }
+        if(GetKindCache.TryGetValue(link, out var kindValue))
+        {
+            kind = kindValue;
+        }
+        if (string.IsNullOrEmpty(clubId) && string.IsNullOrEmpty(kind)) return (clubId, kind);
+        
+        if (string.IsNullOrEmpty(link) || link == "#") return ("", "");
         var client = new HttpClient();
         var response = await client.GetStringAsync(link);
         
         var doc = new HtmlDocument();
         doc.LoadHtml(response);
+
+        if (string.IsNullOrEmpty(clubId))
+        {
+            var clubLink = doc.DocumentNode.SelectNodes("//p[@class='subline']//a")[1].GetAttributeValue("href", "");
+            clubId = clubLink?.Split(["id/"], StringSplitOptions.None)[1] ?? "";
+            GetClubIdFromLinkCache[link] = clubId;
+        }
+
+        if (string.IsNullOrEmpty(kind))
+        {
+            kind = doc.DocumentNode.SelectSingleNode("//p[@class='subline']").InnerText.Split("\n\t\t\t\t&#124;\n\t\t\t\t")[0].Trim();
+            GetKindCache[link] = kind;
+        }
         
-        var clubLink = doc.DocumentNode.SelectNodes("//p[@class='subline']//a")[1].GetAttributeValue("href", "");
-        var clubId = clubLink?.Split(["id/"], StringSplitOptions.None)[1] ?? "";
-        GetClubIdFromLinkCache[link] = clubId;
-        return clubId;
+        return (clubId, kind);
     }
 }
