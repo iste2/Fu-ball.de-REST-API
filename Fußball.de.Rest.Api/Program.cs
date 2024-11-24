@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Text.Json.Serialization;
 using Fußball.de.Rest.Api;
 using Fußball.de.Scraping;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,7 +42,7 @@ app.MapGet("teams/club/{id}/season/{season}", async (string id, string season) =
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
-app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string start, string end) =>
+app.MapGet("/games/team/{id}", async ([FromRoute]string id, [FromQuery]string start, [FromQuery]string end) =>
     {
         try
         {
@@ -59,7 +59,7 @@ app.MapGet("/games/team/{id}/start/{start}/end/{end}", async (string id, string 
     })
     .CacheOutput(policyBuilder => policyBuilder.Expire(TimeSpan.FromMinutes(30)));
 
-app.MapGet("/games/club/{id}/start/{start}/end/{end}/homegamesonly/{homeGamesOnly:bool}", async (string id, string start, string end, bool homeGamesOnly) =>
+app.MapGet("/games/club/{id}", async ([FromRoute]string id, [FromQuery]string start, [FromQuery]string end, [FromQuery]bool homeGamesOnly) =>
     {
         try
         {
