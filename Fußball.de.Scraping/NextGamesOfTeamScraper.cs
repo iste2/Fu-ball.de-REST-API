@@ -8,7 +8,7 @@ public class NextGamesOfTeamScraper(string teamId, Logger log)
 
     public async Task<List<Game>> Scrape()
     {
-        var gamesScraper = new GamesScraper(Url, log);
+        var gamesScraper = new GamesScraper(Url, log, teamId, false);
         return await gamesScraper.Scrape();
     }
 }

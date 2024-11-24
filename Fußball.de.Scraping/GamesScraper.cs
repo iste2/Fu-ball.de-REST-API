@@ -4,7 +4,7 @@ using Serilog.Core;
 
 namespace Fußball.de.Scraping;
 
-public class GamesScraper(string url, Logger log)
+public class GamesScraper(string url, Logger log, string teamId, bool onlyHomeGames)
 {
     private Dictionary<string, string> GetClubIdFromLinkCache { get; } = new();
     private Dictionary<string, string> GetKindCache { get; } = new();
@@ -48,6 +48,7 @@ public class GamesScraper(string url, Logger log)
                 var gameLinkNode = row.SelectSingleNode(".//td[@class='column-score']/a");
 
                 if (homeTeamNode == null || awayTeamNode == null || gameLinkNode == null || !currentKickOff.HasValue) continue;
+                if(onlyHomeGames && ExtractTeamId(homeTeamNode.GetAttributeValue("href", "")) != teamId) continue;
                 
                 var homeClubId = await GetClubIdFromLink(homeTeamNode.GetAttributeValue("href", ""));
                 var homeSideKind = await GetKind(homeTeamNode.GetAttributeValue("href", ""));
