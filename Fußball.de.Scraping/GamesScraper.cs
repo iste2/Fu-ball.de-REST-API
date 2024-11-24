@@ -164,7 +164,7 @@ public class GamesScraper(string url, Logger log, string teamId, bool onlyHomeGa
         {
             kind = kindValue;
         }
-        if (string.IsNullOrEmpty(clubId) && string.IsNullOrEmpty(kind)) return (clubId, kind);
+        if (!string.IsNullOrEmpty(clubId) && !string.IsNullOrEmpty(kind)) return (clubId, kind);
         
         if (string.IsNullOrEmpty(link) || link == "#") return ("", "");
         var client = new HttpClient();
